@@ -10,10 +10,12 @@ import streamlit as st
 import joblib
 import numpy as np
 import os
-import openai
+import google.generativeai as genai
 
-# --- Hardcoded OpenAI API key ---
-openai.api_key = ""
+from dotenv import load_dotenv
+load_dotenv()  # loads values from .env into environment
+import os
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 # --- Paths ---
 BASE_DIR = os.path.dirname(__file__)
@@ -256,15 +258,15 @@ with tab3:
             {data_preview}
             """
             try:
-                response = openai.chat.completions.create(
-                    model="gpt-4o-mini",
-                    messages=[
-                        {"role": "system", "content": "You are a helpful data analyst."},
-                        {"role": "user", "content": prompt},
-                    ],
-                    temperature=0.3,
-                )
-                report_text = response.choices[0].message.content
+                # Instantiate the Gemini model
+                model = genai.GenerativeModel('gemini-1.5-flash')
+
+                # Call the Gemini API to generate the report
+                response = model.generate_content(prompt)
+                
+                # Access the generated text from the response
+                report_text = response.text
+                
                 st.subheader("📊 AI Generated Report")
                 st.write(report_text)
                 st.download_button(
